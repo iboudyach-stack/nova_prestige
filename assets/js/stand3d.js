@@ -197,7 +197,7 @@ export function createStand(canvas, { narrowQuery } = {}) {
   function resize() {
     const r = canvas.getBoundingClientRect();
     W = Math.max(1, r.width); H = Math.max(1, r.height);
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, Math.min(W, H) < 700 ? 1.5 : 1.75));
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, Math.min(W, H) < 700 ? 1.25 : 1.5));
     renderer.setSize(W, H, false);
     narrow = narrowQuery ? narrowQuery.matches : W <= 860;
     const aspect = W / H;
@@ -216,6 +216,7 @@ export function createStand(canvas, { narrowQuery } = {}) {
     camera.position.set(0, 2.6, D);
     camera.lookAt(0, 1.35, 0);
     camera.updateProjectionMatrix();
+    api.dirty = true;
   }
 
   function toScreen(world) {
@@ -247,9 +248,11 @@ export function createStand(canvas, { narrowQuery } = {}) {
     };
   }
 
+  // api.dirty asks the page to render even if the pose has not changed (resize, first show)
+  const api = { state, render, resize, TARGET_LIFT, dirty: true };
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
   resize();
 
-  return { state, render, resize, TARGET_LIFT };
+  return api;
 }

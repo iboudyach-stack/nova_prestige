@@ -13,7 +13,9 @@ Scroll-driven website for **StudyStand**, the foldable laptop stand from the Nov
 7. **Modèle économique:** a balance tips from 60 DH (cost) toward 100 DH (price), then the 40 DH margin lands.
 8. **Étude de marché, stratégie marketing, 6 étapes:** the steps draw their own line.
 9. **Analyse SWOT.**
-10. **Conclusion, précommande, équipe.** The pre-order form is a demo: it saves only in that browser and never asks for payment.
+10. **Conclusion, précommande, équipe.** The pre-order form is a demo: it saves only in that browser and never asks for payment. Confetti fires when the team names arrive, and again on a confirmed pre-order.
+
+On computers the page also has smooth wheel scrolling (Lenis) and a custom cursor that turns into a "Glisser" disc over the 3D stand. Phones keep their native scrolling and no custom cursor.
 
 ## Run it
 
@@ -34,17 +36,18 @@ The scroll footage is plain image frames drawn on a canvas, not video, so it wor
 | `assets/engine/` | scroll-craft engine (do not edit; restyle in `page.css`) |
 | `assets/css/page.css` | Theme tokens and page styles |
 | `assets/js/stand3d.js` | 3D stand + laptop (Three.js), source |
-| `assets/js/page.src.js` | 3D act control, sightline, pre-order form, source |
+| `assets/js/page.src.js` | One animation loop: smooth scroll, cursor, frame sequences, 3D act, confetti, pre-order form (source) |
 | `assets/js/page.js` | Bundled build of the two sources above, loaded by the page |
 | `assets/js/vendor/` | Three.js 0.160.0 |
 | `assets/seq/` | Scroll frames: `entree` (110) and `orbite` (81); `d/` = 1280×720 desktop crops, `m/` = 720×1280 phone frames |
 | `assets/media/` | Stills; `source/` holds the two clips the frames were cut from |
 | `scrollcraft/` | Build brief and fingerprint registry used by the scroll-craft skill |
 
-After editing `page.src.js` or `stand3d.js`, rebuild the bundle:
+After editing `page.src.js` or `stand3d.js`, rebuild the bundle (Lenis and canvas-confetti are bundled in, so the site still works offline):
 
 ```bash
-npx esbuild@0.24.0 assets/js/page.src.js --bundle --format=iife --minify --target=es2019 --legal-comments=eof --outfile=assets/js/page.js
+npm install
+npm run build
 ```
 
 To re-cut frames from a clip (example: the orbit), then set `data-seq-count` in `index.html` to the new frame count:

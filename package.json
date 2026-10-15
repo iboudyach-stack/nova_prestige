@@ -1,0 +1,13 @@
+{
+  "name": "studystand-site",
+  "private": true,
+  "description": "StudyStand by Nova Prestige: scroll-driven site. Only needed to rebuild assets/js/page.js.",
+  "scripts": {
+    "build": "esbuild assets/js/page.src.js --bundle --format=iife --minify --target=es2019 --legal-comments=eof --outfile=assets/js/page.js"
+  },
+  "devDependencies": {
+    "canvas-confetti": "1.9.3",
+    "esbuild": "0.24.0",
+    "lenis": "1.1.13"
+  }
+}

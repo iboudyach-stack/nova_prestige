@@ -305,7 +305,7 @@
 .fin__figure img { width: 100%; height: min(80vh, 44rem); object-fit: cover; object-position: 50% 62%; border-radius: var(--pg-r); }
 .foot { margin-top: var(--sc-10); padding-top: var(--sc-7); border-top: 1px solid var(--sc-hairline); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .foot__title { margin: 0 0 var(--sc-5); font: 700 var(--sc-t-sm)/1.2 var(--sc-font-display); font-stretch: 112%; letter-spacing: var(--sc-track-wide); text-transform: uppercase; color: var(--sc-ink-soft); }
-.foot__team { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: var(--sc-2) var(--sc-6); }
+.foot__team { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: var(--sc-2) var(--sc-6); }
 .foot__team li { padding-block: var(--sc-2); border-bottom: 1px solid var(--sc-hairline); font-weight: 500; }
 .foot__mark { display: flex; align-items: center; gap: var(--sc-3); margin: var(--sc-8) 0 0; color: var(--sc-ink-soft); font-size: var(--sc-t-sm); }
 
@@ -379,3 +379,39 @@
 /* the bar stays out of the opening shot */
 .bar { transition: opacity 300ms var(--sc-ease-out); }
 html:not(.is-scrolled) .bar { opacity: 0; }
+
+/* ------------------------------------------------ smooth scroll (Lenis) -- */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* ------------------------------------------------------- custom cursor -- */
+html.has-cursor, html.has-cursor * { cursor: none !important; }
+html.has-cursor :is(input:not([type="range"]), textarea) { cursor: text !important; }
+.cursor { position: fixed; inset: 0; z-index: 120; pointer-events: none; }
+.cursor__dot, .cursor__ring {
+  position: absolute; left: 0; top: 0; border-radius: 50%;
+  will-change: transform; transition: opacity 160ms var(--sc-ease-out);
+}
+.cursor__dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--sc-accent); }
+.cursor__ring { width: 0; height: 0; display: grid; place-items: center; }
+.cursor__ring::before {
+  content: ""; position: absolute; width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--sc-accent) 70%, transparent);
+  transition: width 200ms var(--sc-ease-out), height 200ms var(--sc-ease-out), background-color 200ms var(--sc-ease-out), border-color 200ms var(--sc-ease-out);
+}
+.cursor__ring b {
+  position: relative; opacity: 0; transition: opacity 160ms var(--sc-ease-out);
+  font: 700 10px/1 var(--sc-font-display); font-stretch: 112%; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sc-accent-ink);
+}
+.cursor.is-link .cursor__ring::before { width: 58px; height: 58px; background: color-mix(in oklab, var(--sc-accent) 14%, transparent); }
+.cursor.is-drag .cursor__ring::before { width: 76px; height: 76px; background: var(--sc-accent); border-color: var(--sc-accent); }
+.cursor.is-drag .cursor__ring b { opacity: 1; }
+.cursor.is-drag .cursor__dot { opacity: 0; }
+.cursor.is-down .cursor__ring::before { width: 28px; height: 28px; }
+.cursor.is-text .cursor__ring, .cursor.is-text .cursor__dot, .cursor.is-out .cursor__ring, .cursor.is-out .cursor__dot { opacity: 0; }
+
+/* ---------------------------------------------------------- grain cost -- */
+.sc-grain { will-change: transform; contain: strict; }
+@media (max-width: 860px) { .sc-grain { display: none; } }

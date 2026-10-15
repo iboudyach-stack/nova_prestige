@@ -11,6 +11,99 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => { t = clamp(t); return t * t * (3 - 2 * t); };
 const span = (p, a, b) => smooth((p - a) / (b - a));
 
+/* ===================== full-screen frame sequences =====================
+   Each canvas[data-seq] draws one still per scroll position, cover-fitted to
+   the screen. Frames map across the act's whole time on screen, so the shot
+   keeps moving while the stage slides in and out. Plain images on a canvas:
+   no video decoder, so it behaves the same in every browser and on iPhone. */
+const smallQuery = matchMedia('(max-width: 860px)');
+
+function sequence(canvas) {
+  const act = canvas.closest('[data-sc-act]');
+  const base = canvas.dataset.seq;
+  const count = parseInt(canvas.dataset.seqCount, 10);
+  const ctx = canvas.getContext('2d');
+  let set = '', frames = [], queue = [], inflight = 0;
+  let cur = 0, drawn = -1, near = false, dirty = true;
+
+  const url = (i) => `${base}/${set}/${String(i + 1).padStart(3, '0')}.webp`;
+  function pump() {
+    while (inflight < 6 && queue.length) {
+      const i = queue.shift();
+      if (frames[i]) continue;
+      const img = new Image();
+      img.decoding = 'async';
+      inflight++;
+      img.onload = () => { img.ok = true; inflight--; dirty = true; pump(); };
+      img.onerror = () => { inflight--; pump(); };
+      img.src = url(i);
+      frames[i] = img;
+    }
+  }
+  function choose() {
+    const next = smallQuery.matches ? 'm' : 'd';
+    if (next === set) return;
+    set = next; frames = new Array(count); queue = []; drawn = -1;
+    // coarse to fine, so a fast scroll always has a nearby frame to show
+    const seen = new Set();
+    for (const step of [16, 8, 4, 2, 1]) for (let i = 0; i < count; i += step) if (!seen.has(i)) { seen.add(i); queue.push(i); }
+    if (!seen.has(count - 1)) queue.splice(1, 0, count - 1);
+  }
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(canvas.clientWidth * dpr);
+    canvas.height = Math.round(canvas.clientHeight * dpr);
+    drawn = -1;
+  }
+  function nearest(i) {
+    for (let d = 0; d < count; d++) {
+      const a = frames[i - d], b = frames[i + d];
+      if (a && a.ok) return a;
+      if (b && b.ok) return b;
+    }
+    return null;
+  }
+  function progress() {
+    const r = act.getBoundingClientRect();
+    const top = r.top + scrollY;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const y0 = Math.max(0, top - innerHeight);
+    const y1 = Math.min(max, top + r.height);
+    return clamp((scrollY - y0) / Math.max(1, y1 - y0));
+  }
+
+  choose();
+  pump();
+  smallQuery.addEventListener?.('change', () => { choose(); pump(); });
+  new ResizeObserver(resize).observe(canvas);
+  new IntersectionObserver((es) => { near = es[0].isIntersecting; }, { rootMargin: '150% 0px' }).observe(act);
+  resize();
+
+  const tick = () => {
+    requestAnimationFrame(tick);
+    if (!near) return;
+    const target = progress() * (count - 1);
+    cur = reduce ? target : cur + (target - cur) * 0.22;
+    const idx = Math.round(cur);
+    if (idx === drawn && !dirty) return;
+    const img = nearest(idx);
+    if (!img) return;
+    dirty = false;
+    const cw = canvas.width, ch = canvas.height;
+    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+    drawn = frames[idx] && frames[idx].ok ? idx : -1;
+  };
+  requestAnimationFrame(tick);
+}
+document.querySelectorAll('canvas[data-seq]').forEach(sequence);
+
+// top bar stays out of the opening shot
+const markScrolled = () => document.documentElement.classList.toggle('is-scrolled', scrollY > 60);
+addEventListener('scroll', markScrolled, { passive: true });
+markScrolled();
+
 /* ============================== the peak ============================== */
 const act = document.getElementById('hauteur');
 const canvas = document.getElementById('gl');

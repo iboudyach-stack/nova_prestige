@@ -166,7 +166,7 @@
 .orbite__copy { bottom: auto; top: 50%; translate: 0 -50%; width: min(32rem, 40vw); }
 .orbite__copy .sc-body { margin-top: var(--sc-4); }
 .orbite__copy .orbite__title { margin-top: var(--sc-4); }
-.orbite__scrim { background: linear-gradient(270deg, color-mix(in oklab, var(--sc-canvas) 82%, transparent) 0%, color-mix(in oklab, var(--sc-canvas) 50%, transparent) 34%, transparent 58%); }
+.orbite__scrim { background: linear-gradient(270deg, color-mix(in oklab, var(--sc-canvas) 94%, transparent) 0%, color-mix(in oklab, var(--sc-canvas) 88%, transparent) 30%, color-mix(in oklab, var(--sc-canvas) 55%, transparent) 46%, transparent 64%); }
 .orbite__lead { font-size: var(--sc-t-lg); color: var(--sc-ink); }
 .raisons { list-style: none; margin: var(--sc-4) 0 0; padding: 0; counter-reset: r; }
 .raisons li {
@@ -356,25 +356,26 @@
 /* no WebGL: the act still reads, over the product in profile */
 .hauteur.no-gl .hauteur__stage { background: url("../media/profil.webp") 72% 60% / auto 90% no-repeat; }
 
-/* ------------------------------------------------ scrub frames (1 + 5) --
-   Portrait footage in a tall frame that dissolves into the ground on desktop,
-   full-bleed on phones. The frame settles in as the act scrolls. */
-.frame {
-  position: absolute; top: 0; bottom: 0; z-index: 0;
-  height: 100%; aspect-ratio: 9 / 16; max-width: 62vw;
-  transform: scale(calc(1.07 - var(--sc-p, 0) * 0.07));
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 82%, transparent 100%), linear-gradient(0deg, transparent 0%, #000 12%);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 82%, transparent 100%), linear-gradient(0deg, transparent 0%, #000 12%);
-  mask-composite: intersect;
+/* ------------------------------------------- frame sequences (1 + 5) --
+   Full-bleed canvas drawn frame by frame from scroll (assets/js/page.src.js).
+   The poster under it is the first frame, so the stage is never empty. */
+.seq, .seq__poster, .seq__poster img {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
 }
-.frame--right { right: clamp(1rem, 7vw, 8rem); }
-.frame--left { left: clamp(1rem, 7vw, 8rem); }
-.entree .sc-scrim, .orbite .sc-scrim { display: none; }
+.seq__poster img { object-fit: cover; }
+.seq { z-index: 0; }
+/* the opening is the product alone: the scrim arrives with the words */
+.entree__scrim { opacity: clamp(0, calc(var(--sc-p, 0) * 5 - 0.55), 1); transition: none; }
 @media (max-width: 860px) {
-  .frame { inset: 0; aspect-ratio: auto; max-width: none; height: auto; -webkit-mask-image: none; mask-image: none; }
-  .entree .sc-scrim, .orbite .sc-scrim { display: block; }
   .entree .sc-scrim--lead {
-    background: linear-gradient(0deg, color-mix(in oklab, var(--sc-canvas) 96%, transparent) 0%, color-mix(in oklab, var(--sc-canvas) 86%, transparent) 34%, color-mix(in oklab, var(--sc-canvas) 40%, transparent) 56%, transparent 72%);
+    background: linear-gradient(0deg, color-mix(in oklab, var(--sc-canvas) 96%, transparent) 0%, color-mix(in oklab, var(--sc-canvas) 86%, transparent) 36%, color-mix(in oklab, var(--sc-canvas) 40%, transparent) 58%, transparent 74%);
   }
 }
+
+/* stills drift inside their frames as the page scrolls */
+.solution__figure, .fin__figure { overflow: hidden; border-radius: var(--pg-r); }
+.solution__figure img, .fin__figure img { scale: 1.16; }
+
+/* the bar stays out of the opening shot */
+.bar { transition: opacity 300ms var(--sc-ease-out); }
+html:not(.is-scrolled) .bar { opacity: 0; }

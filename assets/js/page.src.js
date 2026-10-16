@@ -68,8 +68,15 @@ try { const v = parseInt(localStorage.getItem(AUTO_KEY), 10); if (v >= MIN_SECS 
 const mmss = (t) => { t = Math.max(0, Math.ceil(t)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 const maxY = () => Math.max(0, root.scrollHeight - innerHeight);
 
+const CUE_KEY = 'studystand-auto-cues-v1';
+const cueBox = autoEl('auto-cues'), cueHint = autoEl('auto-cue');
+let cuesOn = true;
+try { if (localStorage.getItem(CUE_KEY) === '0') cuesOn = false; } catch { /* storage unavailable */ }
+let stops = [];        // page positions (px) where the run waits so the section can be explained
+let atCue = false;     // the current pause is a section stop, not a manual one
+let hintTimer = 0;
 let autoState = 'idle'; // idle | run | pause
-let legDur = 0, legT = 0, doneT = 0, startY = 0, shownSec = -1, finished = false;
+let stopY = Infinity, legDur = 0, legT = 0, doneT = 0, startY = 0, shownSec = -1, finished = false;
 
 // Position along a leg of length T: ramp up, constant speed, ramp down. Ends at exactly 1.
 function profile(t, T) {
@@ -95,6 +102,12 @@ function renderAuto() {
     : autoState === 'pause' ? `En pause, reste ${mmss(remaining)}`
     : finished ? 'Terminé. Relancez quand vous voulez.' : 'Le site se déroule en entier sur cette durée.';
 }
+function showHint(on) {
+  clearTimeout(hintTimer);
+  cueHint.classList.remove('is-quiet');
+  cueHint.hidden = !on;
+  if (on) hintTimer = setTimeout(() => cueHint.classList.add('is-quiet'), 4000);
+}
 function announce(msg) { statusEl.textContent = msg; }
 function setOpen(open) {
   panel.hidden = !open;
@@ -102,15 +115,27 @@ function setOpen(open) {
   barEl.classList.toggle('is-open', open);
   if (open) goBtn.focus({ preventScroll: true });
 }
+function nextStop() {
+  if (!cuesOn) return Infinity;
+  const m = maxY();
+  for (const y of stops) if (y > scrollY + 2 && y < m - 8) return y;
+  return Infinity;
+}
 function beginLeg(d) {
   const m = maxY();
   if (scrollY > m - 8) { setScroll(0); startY = 0; } else startY = scrollY;
   legDur = Math.max(1, d); legT = 0; autoState = 'run'; finished = false; shownSec = -1;
+  atCue = false; showHint(false); stopY = nextStop();
 }
 function startAuto() { doneT = 0; beginLeg(autoSecs); renderAuto(); announce('Défilement lancé'); setOpen(false); }
-function pauseAuto() { if (autoState !== 'run') return; doneT += legT; autoState = 'pause'; renderAuto(); announce('En pause'); }
+function pauseAuto(cue) {
+  if (autoState !== 'run') return;
+  doneT += legT; autoState = 'pause'; atCue = !!cue; renderAuto();
+  showHint(!!cue); announce(cue ? 'Section affichée, Espace pour continuer' : 'En pause');
+}
 function resumeAuto() { beginLeg(autoSecs - doneT); renderAuto(); announce('Reprise'); setOpen(false); }
 function stopAuto(done) {
+  showHint(false); atCue = false;
   autoState = 'idle'; doneT = 0; legT = 0; finished = !!done;
   trackBar.style.transform = 'scaleX(0)';
   renderAuto(); announce(done ? 'Terminé' : 'Arrêté');
@@ -118,11 +143,15 @@ function stopAuto(done) {
 ticks.push((dt, raw) => {
   if (autoState !== 'run') return;
   legT = Math.min(legDur, legT + Math.min(raw, 5)); // slow frames still count in full, so it ends on time
-  setScroll(startY + (maxY() - startY) * profile(legT, legDur));
+  let y = startY + (maxY() - startY) * profile(legT, legDur);
+  const hit = y >= stopY && legT < legDur;
+  if (hit) y = stopY;
+  setScroll(y);
   trackBar.style.transform = `scaleX(${clamp((doneT + legT) / autoSecs).toFixed(4)})`;
   const sec = Math.ceil(autoSecs - doneT - legT);
   if (sec !== shownSec) { shownSec = sec; renderAuto(); }
   if (legT >= legDur) stopAuto(true);
+  else if (hit) pauseAuto(true);
 });
 
 toggle.addEventListener('click', () => setOpen(panel.hidden));
@@ -144,7 +173,26 @@ const inUi = (e) => e.target.closest && e.target.closest('#auto-panel, #auto-tog
 const takeOver = (e) => { if (autoState === 'run' && !inUi(e)) pauseAuto(); };
 addEventListener('wheel', takeOver, { passive: true });
 addEventListener('touchstart', takeOver, { passive: true });
-addEventListener('keydown', (e) => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) takeOver(e); });
+addEventListener('keydown', (e) => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(e.key)) takeOver(e); });
+// Space: stop the run, press again to continue with the time that is left
+addEventListener('keydown', (e) => {
+  if (e.key !== ' ' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (autoState === 'idle') return;
+  if (e.target.closest && e.target.closest('input, select, textarea, button, a, [contenteditable]')) return;
+  e.preventDefault();
+  if (autoState === 'run') pauseAuto(); else resumeAuto();
+});
+cueHint.addEventListener('click', () => { if (autoState === 'pause') resumeAuto(); });
+function renderCues() {
+  cueBox.setAttribute('aria-checked', String(cuesOn));
+  if (autoState === 'run') stopY = nextStop();
+}
+cueBox.addEventListener('click', () => {
+  cuesOn = !cuesOn;
+  try { localStorage.setItem(CUE_KEY, cuesOn ? '1' : '0'); } catch { /* ignore */ }
+  renderCues();
+});
+renderCues();
 addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('#gl, #hinge')) takeOver(e); });
 addEventListener('focusin', (e) => { if (e.target.closest && e.target.closest('#order input, #order select')) takeOver(e); });
 renderAuto();
@@ -200,6 +248,18 @@ function remeasure() {
   measureHolds();
   window.ScrollCraft?.instances?.[0]?.layout?.();
   for (const m of measurers) m();
+  computeStops();
+}
+// Each section with data-stop waits where its message is fully on screen (fraction of its own travel)
+function computeStops() {
+  const vh = innerHeight;
+  stops = [...document.querySelectorAll('[data-stop]')].map((sec) => {
+    const f = clamp(parseFloat(sec.dataset.stop) || 1);
+    const H = holds.find((h) => h.sec === sec);
+    if (H && H.on) return H.start + f * H.len;
+    const top = sec.getBoundingClientRect().top + scrollY;
+    return top + f * Math.max(0, sec.offsetHeight - vh);
+  }).sort((a, b) => a - b);
 }
 
 function sequence(canvas) {

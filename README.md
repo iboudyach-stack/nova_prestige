@@ -25,7 +25,9 @@ Press the **NP** mark in the top-left corner (it is clickable even when the bar 
 
 - the time defaults to **2:30**; change it with **−** / **+** (15 s steps, 0:30 to 10:00) or the 1 / 2:30 / 3 / 5 min buttons, then press **Lancer**;
 - the whole page then plays through by itself and reaches the end in exactly that time (constant speed with a short ease in and out);
-- scrolling with the wheel, touching the screen, pressing arrow/space keys, or using the 3D stand or the form **pauses** it. Open the panel again for **Reprendre** or **Arrêter**;
+- **Space** stops the run and **Space** again continues it with the time that is left (it does nothing special while you type in the form);
+- **Pause à chaque section** (switch in the panel, on by default, remembered): the run halts by itself once each section's message is fully on screen, so you can explain it. Press **Space** (or tap the "Espace pour continuer" pill on a phone) to move on. The waits are not counted, so 2:30 is 2:30 of motion. Stop points are the `data-stop` fractions in `index.html`;
+- scrolling with the wheel, touching the screen, pressing arrow keys, or using the 3D stand or the form **pauses** it. Open the panel again for **Reprendre** or **Arrêter**;
 - the chosen time is remembered in the browser. Esc or a second press on NP closes the panel.
 
 ## Run it

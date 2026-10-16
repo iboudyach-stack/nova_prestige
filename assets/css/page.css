@@ -535,3 +535,16 @@ html:not(.is-scrolled) .bar.is-open { opacity: 1; }
 .seg__note { min-height: 3.3em; align-self: start; }
 .rail { align-items: stretch; }
 .rail__lead, .rail__end { align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+
+/* auto-scroll: stop at each section */
+.auto__cues { display: flex; align-items: center; justify-content: space-between; gap: var(--sc-3); width: 100%; padding: var(--sc-2) 0; background: none; border: 0; color: var(--sc-ink); font: inherit; text-align: left; cursor: pointer; }
+.auto__cues span { display: grid; gap: 2px; font-size: var(--sc-t-sm); }
+.auto__cues small { color: var(--sc-ink-soft); font-size: var(--sc-t-xs, 0.75rem); }
+.auto__cues i { position: relative; flex: none; width: 40px; height: 22px; border-radius: 11px; background: var(--sc-hairline-strong); transition: background .2s; }
+.auto__cues i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: translate .2s; }
+.auto__cues[aria-checked="true"] i { background: var(--sc-accent); }
+.auto__cues[aria-checked="true"] i::after { translate: 18px 0; }
+.auto-cue { position: fixed; z-index: 60; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); translate: -50% 0; padding: 12px 20px; border-radius: 999px; border: 1px solid var(--sc-accent); background: rgba(7, 9, 15, .82); color: #fff; font: 600 var(--sc-t-sm)/1 var(--sc-font-body, inherit); backdrop-filter: blur(8px); cursor: pointer; transition: opacity .6s; }
+.auto-cue[hidden] { display: none; }
+.auto-cue.is-quiet { opacity: .45; }
+.auto-cue:hover, .auto-cue:focus-visible { opacity: 1; }

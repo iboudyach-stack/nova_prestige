@@ -39,6 +39,9 @@
       <button type="button" data-secs="180">3 min</button>
       <button type="button" data-secs="300">5 min</button>
     </div>
+    <button class="auto__cues" id="auto-cues" type="button" role="switch" aria-checked="true">
+      <span>Pause à chaque section<small>Espace pour continuer</small></span><i aria-hidden="true"></i>
+    </button>
     <div class="auto__row">
       <button class="auto__go" id="auto-go" type="button">Lancer</button>
       <button class="auto__stop" id="auto-stop" type="button" hidden>Arrêter</button>
@@ -48,11 +51,12 @@
     <p class="visually-hidden" id="auto-status" role="status"></p>
   </div>
 </header>
+<button class="auto-cue" id="auto-cue" type="button" hidden>Espace pour continuer</button>
 
 <main id="top">
 
   <!-- 1 · ENTRÉE: full-screen product, frame by frame under the scroll. No text until you scroll. -->
-  <section class="entree" data-sc-act="pin" data-sc-span="3.4" data-sc-drift="#07090F">
+  <section class="entree" data-stop="0.78" data-sc-act="pin" data-sc-span="3.4" data-sc-drift="#07090F">
     <div data-sc-stage>
       <picture class="seq__poster" aria-hidden="true">
         <source media="(max-width: 860px)" srcset="assets/seq/entree/m/001.webp">
@@ -73,7 +77,7 @@
   </section>
 
   <!-- 2 · PROBLÉMATIQUE: pin. The sentence assembles while a head bends toward a low screen. -->
-  <section class="probleme" data-sc-act="pin" data-sc-span="2.4" data-sc-drift="#0B0F19">
+  <section class="probleme" data-stop="0.85" data-sc-act="pin" data-sc-span="2.4" data-sc-drift="#0B0F19">
     <div data-sc-stage class="probleme__stage">
       <svg class="neck" viewBox="0 0 400 420" aria-hidden="true">
         <line x1="40" y1="372" x2="380" y2="372" class="neck__desk"/>
@@ -96,7 +100,7 @@
   </section>
 
   <!-- 3 · SOLUTION: flow + reveal. Quiet before the peak. -->
-  <section class="sc-section solution" data-sc-act="flow" data-hold="1.2" data-sc-drift="#0A0D16">
+  <section class="sc-section solution" data-stop="0.7" data-sc-act="flow" data-hold="1.2" data-sc-drift="#0A0D16">
    <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap solution__grid">
       <div class="solution__text sc-stack" data-sc-in data-sc-stagger="70">
@@ -118,7 +122,7 @@
   </section>
 
   <!-- 4 · RÉGLEZ LA HAUTEUR (peak): pin + the signature move. -->
-  <section class="hauteur" id="hauteur" data-sc-act="pin" data-sc-span="3.8" data-sc-drift="#0C1222">
+  <section class="hauteur" data-stop="0.85" id="hauteur" data-sc-act="pin" data-sc-span="3.8" data-sc-drift="#0C1222">
     <div data-sc-stage class="hauteur__stage">
       <canvas class="hauteur__gl" id="gl" aria-hidden="true"></canvas>
       <svg class="sight" id="sight" aria-hidden="true">
@@ -149,7 +153,7 @@
   </section>
 
   <!-- 5 · DIFFÉRENCIATION: full-screen generated orbit, frame by frame. -->
-  <section class="orbite" data-sc-act="pin" data-sc-span="3" data-sc-drift="#0A0D16">
+  <section class="orbite" data-stop="0.85" data-sc-act="pin" data-sc-span="3" data-sc-drift="#0A0D16">
     <div data-sc-stage>
       <picture class="seq__poster" aria-hidden="true">
         <source media="(max-width: 860px)" srcset="assets/seq/orbite/m/001.webp">
@@ -176,7 +180,7 @@
   </section>
 
   <!-- 6 · SEGMENTS: pan. Lateral reads as "who", one label schema per person. -->
-  <section class="segments" data-sc-act="pan" data-sc-span="4.4" data-sc-drift="#0E1322">
+  <section class="segments" data-stop="0.95" data-sc-act="pan" data-sc-span="4.4" data-sc-drift="#0E1322">
     <div data-sc-stage class="segments__stage">
       <div class="rail" data-sc-pan="0.06">
         <div class="rail__lead">
@@ -211,7 +215,7 @@
   </section>
 
   <!-- 7 · MODÈLE ÉCONOMIQUE: pin. The balance tips toward the price, the margin lands. -->
-  <section class="modele" data-sc-act="pin" data-sc-span="2" data-sc-drift="#0A0D16">
+  <section class="modele" data-stop="0.85" data-sc-act="pin" data-sc-span="2" data-sc-drift="#0A0D16">
     <div data-sc-stage class="modele__stage">
       <div class="modele__text" data-sc-cue="0 1 0 0.06">
         <h2 class="modele__title">Modèle économique</h2>
@@ -229,7 +233,7 @@
   </section>
 
   <!-- 8 · MÉTHODE: two columns from the deck. Holds while you read. -->
-  <section class="sc-section methode" data-sc-act="flow" data-hold="1.6" data-sc-drift="#0B0F19">
+  <section class="sc-section methode" data-stop="0.7" data-sc-act="flow" data-hold="1.6" data-sc-drift="#0B0F19">
    <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap">
       <div class="methode__cols">
@@ -247,7 +251,7 @@
   </section>
 
   <!-- 8b · ÉTAPES: six steps draw their own line while the section holds. -->
-  <section class="sc-section etapes-sec" data-sc-act="flow" data-hold="1.2" data-sc-drift="#0B0F19">
+  <section class="sc-section etapes-sec" data-stop="0.75" data-sc-act="flow" data-hold="1.2" data-sc-drift="#0B0F19">
    <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap">
       <div class="etapes">
@@ -267,7 +271,7 @@
   </section>
 
   <!-- 9 · SWOT: reveal. Four wipes, weaknesses included. -->
-  <section class="sc-section swot" data-sc-act="flow" data-hold="1.5" data-sc-drift="#0E1322">
+  <section class="sc-section swot" data-stop="0.7" data-sc-act="flow" data-hold="1.5" data-sc-drift="#0E1322">
    <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap">
       <div class="swot__head sc-stack" data-sc-in data-sc-stagger="60">

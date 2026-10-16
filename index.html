@@ -58,7 +58,7 @@
         <source media="(max-width: 860px)" srcset="assets/seq/entree/m/001.webp">
         <img src="assets/seq/entree/d/001.webp" alt="">
       </picture>
-      <canvas class="seq" data-seq="assets/seq/entree" data-seq-count="110" aria-hidden="true"></canvas>
+      <canvas class="seq" data-seq="assets/seq/entree" data-seq-count="110" data-seq-speed="2" aria-hidden="true"></canvas>
       <div class="sc-scrim sc-scrim--lead entree__scrim" aria-hidden="true"></div>
 
       <div class="sc-copy sc-copy--lead entree__copy" data-sc-cue="0.14 0.5 0.3 0.25">
@@ -96,7 +96,8 @@
   </section>
 
   <!-- 3 · SOLUTION: flow + reveal. Quiet before the peak. -->
-  <section class="sc-section solution" data-sc-act="flow" data-sc-drift="#0A0D16">
+  <section class="sc-section solution" data-sc-act="flow" data-hold="1.2" data-sc-drift="#0A0D16">
+   <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap solution__grid">
       <div class="solution__text sc-stack" data-sc-in data-sc-stagger="70">
         <p class="label">Solution proposée</p>
@@ -109,10 +110,11 @@
           <li><span>Matériaux résistants</span></li>
         </ul>
       </div>
-      <figure class="solution__figure" data-sc-reveal="up" data-sc-reveal-at="0.12 0.5">
+      <figure class="solution__figure">
         <img data-sc-parallax="-1.2" src="assets/media/profil.webp" width="720" height="1280" alt="Le StudyStand en aluminium, vu de profil sur une table en pierre" loading="lazy">
       </figure>
     </div>
+   </div></div>
   </section>
 
   <!-- 4 · RÉGLEZ LA HAUTEUR (peak): pin + the signature move. -->
@@ -153,7 +155,7 @@
         <source media="(max-width: 860px)" srcset="assets/seq/orbite/m/001.webp">
         <img src="assets/seq/orbite/d/001.webp" alt="" loading="lazy">
       </picture>
-      <canvas class="seq" data-seq="assets/seq/orbite" data-seq-count="81" aria-hidden="true"></canvas>
+      <canvas class="seq" data-seq="assets/seq/orbite" data-seq-count="81" data-seq-speed="2.4" aria-hidden="true"></canvas>
       <div class="sc-scrim sc-scrim--trail orbite__scrim" aria-hidden="true"></div>
 
       <div class="sc-copy sc-copy--trail orbite__copy" data-sc-cue="0.02 0.42">
@@ -226,8 +228,9 @@
     </div>
   </section>
 
-  <!-- 8 · MÉTHODE: flow. Two columns from the deck, then six steps that draw a line. -->
-  <section class="sc-section methode" data-sc-act="flow" data-sc-drift="#0B0F19">
+  <!-- 8 · MÉTHODE: two columns from the deck. Holds while you read. -->
+  <section class="sc-section methode" data-sc-act="flow" data-hold="1.6" data-sc-drift="#0B0F19">
+   <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap">
       <div class="methode__cols">
         <div class="sc-stack" data-sc-in data-sc-stagger="60">
@@ -239,6 +242,14 @@
           <p class="sc-body">La stratégie inclut la création d'une identité visuelle simple (nom, logo, slogan) et la publication de photos et vidéos de démonstration sur les réseaux sociaux étudiants. Une offre de lancement en précommande sera proposée, suivie d'améliorations basées sur les avis des premiers utilisateurs.</p>
         </div>
       </div>
+    </div>
+   </div></div>
+  </section>
+
+  <!-- 8b · ÉTAPES: six steps draw their own line while the section holds. -->
+  <section class="sc-section etapes-sec" data-sc-act="flow" data-hold="1.2" data-sc-drift="#0B0F19">
+   <div class="hold__track"><div class="hold__in">
+    <div class="sc-wrap">
       <div class="etapes">
         <h3 class="etapes__title" data-sc-in>Le développement du projet est divisé en 6 actions clés</h3>
         <ol class="etapes__list" data-sc-in data-sc-stagger="70">
@@ -252,22 +263,25 @@
         <span class="etapes__trace" aria-hidden="true"></span>
       </div>
     </div>
+   </div></div>
   </section>
 
   <!-- 9 · SWOT: reveal. Four wipes, weaknesses included. -->
-  <section class="sc-section swot" data-sc-drift="#0E1322">
+  <section class="sc-section swot" data-sc-act="flow" data-hold="1.5" data-sc-drift="#0E1322">
+   <div class="hold__track"><div class="hold__in">
     <div class="sc-wrap">
       <div class="swot__head sc-stack" data-sc-in data-sc-stagger="60">
         <h2 class="swot__title">Analyse SWOT</h2>
         <p class="sc-body">StudyStand se distingue par son format compact, sa simplicité et son adaptation aux besoins des étudiants. Le projet offre des opportunités de croissance grâce à la personnalisation et à la vente directe, malgré certains défis liés à la concurrence, aux coûts de fabrication et aux produits importés à bas prix.</p>
       </div>
       <div class="swot__grid">
-        <div class="quad quad--s" data-sc-reveal="right" data-sc-reveal-at="0.05 0.4"><h3>Forces</h3><p>Format compact, simplicité, adaptation aux besoins des étudiants.</p></div>
-        <div class="quad" data-sc-reveal="left" data-sc-reveal-at="0.1 0.45"><h3>Faiblesses</h3><p>Les coûts de fabrication.</p></div>
-        <div class="quad quad--o" data-sc-reveal="right" data-sc-reveal-at="0.15 0.5"><h3>Opportunités</h3><p>La personnalisation et la vente directe.</p></div>
-        <div class="quad" data-sc-reveal="left" data-sc-reveal-at="0.2 0.55"><h3>Menaces</h3><p>La concurrence et les produits importés à bas prix.</p></div>
+        <div class="quad quad--s"><h3>Forces</h3><p>Format compact, simplicité, adaptation aux besoins des étudiants.</p></div>
+        <div class="quad"><h3>Faiblesses</h3><p>Les coûts de fabrication.</p></div>
+        <div class="quad quad--o"><h3>Opportunités</h3><p>La personnalisation et la vente directe.</p></div>
+        <div class="quad"><h3>Menaces</h3><p>La concurrence et les produits importés à bas prix.</p></div>
       </div>
     </div>
+   </div></div>
   </section>
 
   <!-- 10 · FIN: conclusion, the one action, then the team. -->

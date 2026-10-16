@@ -15,13 +15,15 @@ Scroll-driven website for **StudyStand**, the foldable laptop stand from the Nov
 9. **Analyse SWOT.**
 10. **Conclusion, précommande, équipe.** The pre-order form is a demo: it saves only in that browser and never asks for payment. Confetti fires when the team names arrive, and again on a confirmed pre-order.
 
+The two footage sections (opening and orbit) play their frames early in the section (`data-seq-speed` in `index.html`: 2 and 2.4) and then hold the last frame under the text. The text sections (solution, market study and strategy, the six steps, SWOT) hold on screen for a while (`data-hold`, in screen-heights) instead of scrolling straight past; a section taller than the screen simply does not hold.
+
 On computers the page also has smooth wheel scrolling (Lenis) and a custom cursor that turns into a "Glisser" disc over the 3D stand. Phones keep their native scrolling and no custom cursor.
 
 ## Auto-scroll (hidden)
 
 Press the **NP** mark in the top-left corner (it is clickable even when the bar is invisible on the opening shot). A small panel opens:
 
-- set the time with **−** / **+** (15 s steps, 0:30 to 10:00) or the 1 / 2 / 3 / 5 min buttons, then press **Lancer**;
+- the time defaults to **3 min**; change it with **−** / **+** (15 s steps, 0:30 to 10:00) or the 1 / 2 / 3 / 5 min buttons, then press **Lancer**;
 - the whole page then plays through by itself and reaches the end in exactly that time (constant speed with a short ease in and out);
 - scrolling with the wheel, touching the screen, pressing arrow/space keys, or using the 3D stand or the form **pauses** it. Open the panel again for **Reprendre** or **Arrêter**;
 - the chosen time is remembered in the browser. Esc or a second press on NP closes the panel.

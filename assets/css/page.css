@@ -463,3 +463,61 @@ html:not(.is-scrolled) .bar.is-open { opacity: 1; }
 .auto__track { height: 2px; background: var(--sc-hairline-strong); overflow: hidden; }
 .auto__track i { display: block; height: 100%; background: var(--sc-accent); transform-origin: 0 50%; transform: scaleX(0); }
 .auto__left { margin: 0; font-size: var(--sc-t-sm); color: var(--sc-ink-soft); font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------ text holds --
+   A text section stays on screen while the page scrolls on, so it can be read.
+   assets/js/page.src.js measures each [data-hold], pins .hold__in in the
+   middle of the screen for that many screen-heights, and publishes --hp (0 to 1)
+   across the hold. A block taller than the screen simply does not hold. */
+.hold__in.is-held { position: sticky; }
+.hold .sc-section, .sc-section.hold { padding-block: 0; }
+.solution, .methode, .etapes-sec, .swot { padding-block: clamp(2rem, 4vw, 4rem); }
+.methode, .solution { padding-top: clamp(3rem, 6vw, 6rem); }
+.etapes { margin-top: 0; }
+
+/* what appears as the hold plays, driven by --hp */
+.solution__figure { clip-path: inset(calc((1 - clamp(0, var(--hp, 1) * 3, 1)) * 100%) 0 0 0); }
+.etapes__trace { transform: scaleY(clamp(0, calc(var(--hp, 1) * 1.5 - 0.1), 1)); }
+.quad { --d: 0; clip-path: inset(0 calc((1 - clamp(0, (var(--hp, 1) - var(--d)) * 3, 1)) * 100%) 0 0); }
+.quad:nth-child(even) { clip-path: inset(0 0 0 calc((1 - clamp(0, (var(--hp, 1) - var(--d)) * 3, 1)) * 100%)); }
+.quad:nth-child(1) { --d: 0; }
+.quad:nth-child(2) { --d: 0.12; }
+.quad:nth-child(3) { --d: 0.24; }
+.quad:nth-child(4) { --d: 0.36; }
+@media (prefers-reduced-motion: reduce) {
+  .solution__figure, .quad, .quad:nth-child(even) { clip-path: none; }
+  .etapes__trace { transform: none; }
+}
+@media (max-width: 860px) {
+  .solution, .methode, .etapes-sec, .swot { padding-block: var(--sc-5); }
+  .solution__title { font-size: var(--sc-t-2xl); }
+  .solution__figure img { height: 34vh; }
+  .methode__cols { gap: var(--sc-6); }
+  .swot__grid { margin-top: var(--sc-5); }
+  .quad, .quad:nth-child(even) { padding: var(--sc-4) 0; }
+  .quad--o { padding-inline: var(--sc-4); }
+  .quad h3 { font-size: var(--sc-t-xl); margin-bottom: var(--sc-2); }
+  .quad p { font-size: var(--sc-t-base); }
+}
+
+/* solution: sized to fit one screen so it can hold */
+.solution__title { font-size: var(--sc-t-2xl); max-width: 20ch; }
+.solution__figure img { height: min(62vh, 36rem); }
+.solution .spec { margin-top: var(--sc-5); }
+.solution .spec li { padding-block: var(--sc-3); font-size: var(--sc-t-base); }
+@media (max-width: 860px) {
+  .solution__grid { gap: var(--sc-4); }
+  .solution__title { font-size: var(--sc-t-xl); }
+  .solution__figure img { height: 22vh; }
+  .solution .spec { margin-top: var(--sc-3); }
+  .solution .spec li { padding-block: var(--sc-2); }
+}
+
+/* the opening footage now ends early and holds a bright last frame under the statement */
+.entree .sc-scrim--lead {
+  background: linear-gradient(to top right,
+    color-mix(in oklab, var(--sc-canvas) 97%, transparent) 0%,
+    color-mix(in oklab, var(--sc-canvas) 90%, transparent) 34%,
+    color-mix(in oklab, var(--sc-canvas) 62%, transparent) 54%,
+    transparent 82%);
+}

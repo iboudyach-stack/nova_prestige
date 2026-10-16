@@ -521,3 +521,17 @@ html:not(.is-scrolled) .bar.is-open { opacity: 1; }
     color-mix(in oklab, var(--sc-canvas) 62%, transparent) 54%,
     transparent 82%);
 }
+
+/* ------------------------------------------------ customer cards: aligned --
+   Every card has the same three rows, so role labels, names and notes sit on the
+   same lines across the whole rail. The note reserves two lines, so a one-line
+   note no longer pulls its name down. */
+.seg {
+  display: grid; grid-template-rows: auto 1fr auto auto; align-content: stretch;
+  min-height: min(54vh, 30rem); padding: var(--sc-5) var(--sc-5) var(--sc-5) var(--sc-5);
+}
+.seg__role { align-self: start; }
+.seg__name { margin: 0 0 var(--sc-4); align-self: end; line-height: 0.9; }
+.seg__note { min-height: 3.3em; align-self: start; }
+.rail { align-items: stretch; }
+.rail__lead, .rail__end { align-self: stretch; display: flex; flex-direction: column; justify-content: center; }

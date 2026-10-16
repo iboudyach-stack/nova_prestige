@@ -23,7 +23,7 @@ On computers the page also has smooth wheel scrolling (Lenis) and a custom curso
 
 Press the **NP** mark in the top-left corner (it is clickable even when the bar is invisible on the opening shot). A small panel opens:
 
-- the time defaults to **3 min**; change it with **−** / **+** (15 s steps, 0:30 to 10:00) or the 1 / 2 / 3 / 5 min buttons, then press **Lancer**;
+- the time defaults to **2:30**; change it with **−** / **+** (15 s steps, 0:30 to 10:00) or the 1 / 2:30 / 3 / 5 min buttons, then press **Lancer**;
 - the whole page then plays through by itself and reaches the end in exactly that time (constant speed with a short ease in and out);
 - scrolling with the wheel, touching the screen, pressing arrow/space keys, or using the 3D stand or the form **pauses** it. Open the panel again for **Reprendre** or **Arrêter**;
 - the chosen time is remembered in the browser. Esc or a second press on NP closes the panel.
@@ -50,8 +50,8 @@ The scroll footage is plain image frames drawn on a canvas, not video, so it wor
 | `assets/js/page.src.js` | One animation loop: smooth scroll, auto-scroll, cursor, frame sequences, 3D act, confetti, pre-order form (source) |
 | `assets/js/page.js` | Bundled build of the two sources above, loaded by the page |
 | `assets/js/vendor/` | Three.js 0.160.0 |
-| `assets/seq/` | Scroll frames: `entree` (110) and `orbite` (81); `d/` = 1280×720 desktop crops, `m/` = 720×1280 phone frames |
-| `assets/media/` | Stills; `source/` holds the two clips the frames were cut from |
+| `assets/seq/` | Scroll frames at 24 fps: `entree` (178 frames, 1920×1080 desktop / 900×1600 phone) and `orbite` (121 frames, 1600×900 / 900×1600); `d/` = desktop, `m/` = phone |
+| `assets/media/` | Stills; `source/` holds the two clips the frames were cut from (`entree-hq.mp4`, the 2160×3840 product film; `orbite-24fps.mp4`, the generated orbit) |
 | `scrollcraft/` | Build brief and fingerprint registry used by the scroll-craft skill |
 
 After editing `page.src.js` or `stand3d.js`, rebuild the bundle (Lenis and canvas-confetti are bundled in, so the site still works offline):
@@ -61,9 +61,9 @@ npm install
 npm run build
 ```
 
-To re-cut frames from a clip (example: the orbit), then set `data-seq-count` in `index.html` to the new frame count:
+To re-cut frames from a clip (example: the opening, frames 14 to 191 of the film, lightly denoised), then set `data-seq-count` in `index.html` to the new frame count:
 
 ```bash
-ffmpeg -i assets/media/source/orbite.mp4 -vf "fps=16,crop=iw:iw*9/16:0:ih*0.355,scale=1280:720" -c:v libwebp -quality 72 assets/seq/orbite/d/%03d.webp
-ffmpeg -i assets/media/source/orbite.mp4 -vf "fps=16,scale=720:1280" -c:v libwebp -quality 64 assets/seq/orbite/m/%03d.webp
+ffmpeg -i assets/media/source/entree-hq.mp4 -vf "trim=start_frame=14:end_frame=192,setpts=PTS-STARTPTS,crop=iw:iw*9/16:0:'ih*(0.33+0.09*min(t/3\,1))',scale=1920:1080:flags=lanczos,hqdn3d=2:1.5:5:4" -c:v libwebp -quality 86 assets/seq/entree/d/%03d.webp
+ffmpeg -i assets/media/source/entree-hq.mp4 -vf "trim=start_frame=14:end_frame=192,setpts=PTS-STARTPTS,scale=900:1600:flags=lanczos,hqdn3d=2:1.5:5:4" -c:v libwebp -quality 80 assets/seq/entree/m/%03d.webp
 ```

@@ -54,7 +54,7 @@ if (fine && !reduce) {
    whole page plays through by itself in exactly that time: constant speed with
    a short ease in and out. Driven by real elapsed time, so it finishes on
    schedule even on a slow machine. Any manual scroll, key or touch pauses it. */
-const AUTO_KEY = 'studystand-auto-seconds-v2';
+const AUTO_KEY = 'studystand-auto-seconds-v3';
 const MIN_SECS = 30, MAX_SECS = 600;
 const autoEl = (id) => document.getElementById(id);
 const toggle = autoEl('auto-toggle'), panel = autoEl('auto-panel'), barEl = autoEl('bar');
@@ -63,7 +63,7 @@ const trackBar = autoEl('auto-bar'), leftEl = autoEl('auto-left'), statusEl = au
 const stepBtns = [...panel.querySelectorAll('[data-step]')];
 const presetBtns = [...panel.querySelectorAll('[data-secs]')];
 
-let autoSecs = 180;
+let autoSecs = 150;
 try { const v = parseInt(localStorage.getItem(AUTO_KEY), 10); if (v >= MIN_SECS && v <= MAX_SECS) autoSecs = v; } catch { /* storage unavailable */ }
 const mmss = (t) => { t = Math.max(0, Math.ceil(t)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 const maxY = () => Math.max(0, root.scrollHeight - innerHeight);
@@ -209,7 +209,7 @@ function sequence(canvas) {
   const speed = parseFloat(canvas.dataset.seqSpeed) || 1; // 2 = footage ends halfway through the act
   const ctx = canvas.getContext('2d');
   const canBitmap = typeof createImageBitmap === 'function';
-  const R = 12; // frames either side of the current one kept decoded
+  const R = 10; // frames either side of the current one kept decoded
   let set = '', frames = [], bitmaps = [], pending = new Set(), queue = [], inflight = 0;
   let cur = 0, drawnKey = '', winAt = -1, near = false, dirty = true;
   let y0 = 0, y1 = 1;

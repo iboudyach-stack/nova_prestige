@@ -205,7 +205,7 @@ function remeasure() {
 function sequence(canvas) {
   const act = canvas.closest('[data-sc-act]');
   const base = canvas.dataset.seq;
-  const count = parseInt(canvas.dataset.seqCount, 10);
+  let count = parseInt(canvas.dataset.seqCount, 10); // set per frame set in choose()
   const speed = parseFloat(canvas.dataset.seqSpeed) || 1; // 2 = footage ends halfway through the act
   const ctx = canvas.getContext('2d');
   const canBitmap = typeof createImageBitmap === 'function';
@@ -236,6 +236,7 @@ function sequence(canvas) {
     const next = narrowQuery.matches ? 'm' : 'd';
     if (next === set) return;
     dropBitmaps();
+    count = parseInt((next === 'm' && canvas.dataset.seqCountM) || canvas.dataset.seqCount, 10);
     set = next; frames = new Array(count); queue = []; drawnKey = ''; winAt = -1; dirty = true;
     // coarse to fine, so a fast scroll always has a nearby frame to show
     const seen = new Set();

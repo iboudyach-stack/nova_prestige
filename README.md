@@ -17,6 +17,15 @@ Scroll-driven website for **StudyStand**, the foldable laptop stand from the Nov
 
 On computers the page also has smooth wheel scrolling (Lenis) and a custom cursor that turns into a "Glisser" disc over the 3D stand. Phones keep their native scrolling and no custom cursor.
 
+## Auto-scroll (hidden)
+
+Press the **NP** mark in the top-left corner (it is clickable even when the bar is invisible on the opening shot). A small panel opens:
+
+- set the time with **−** / **+** (15 s steps, 0:30 to 10:00) or the 1 / 2 / 3 / 5 min buttons, then press **Lancer**;
+- the whole page then plays through by itself and reaches the end in exactly that time (constant speed with a short ease in and out);
+- scrolling with the wheel, touching the screen, pressing arrow/space keys, or using the 3D stand or the form **pauses** it. Open the panel again for **Reprendre** or **Arrêter**;
+- the chosen time is remembered in the browser. Esc or a second press on NP closes the panel.
+
 ## Run it
 
 Double-click `index.html`, or serve the folder:
@@ -36,7 +45,7 @@ The scroll footage is plain image frames drawn on a canvas, not video, so it wor
 | `assets/engine/` | scroll-craft engine (do not edit; restyle in `page.css`) |
 | `assets/css/page.css` | Theme tokens and page styles |
 | `assets/js/stand3d.js` | 3D stand + laptop (Three.js), source |
-| `assets/js/page.src.js` | One animation loop: smooth scroll, cursor, frame sequences, 3D act, confetti, pre-order form (source) |
+| `assets/js/page.src.js` | One animation loop: smooth scroll, auto-scroll, cursor, frame sequences, 3D act, confetti, pre-order form (source) |
 | `assets/js/page.js` | Bundled build of the two sources above, loaded by the page |
 | `assets/js/vendor/` | Three.js 0.160.0 |
 | `assets/seq/` | Scroll frames: `entree` (110) and `orbite` (81); `d/` = 1280×720 desktop crops, `m/` = 720×1280 phone frames |

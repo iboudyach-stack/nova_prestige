@@ -33,10 +33,17 @@
   padding: calc(var(--sc-4) + env(safe-area-inset-top, 0px)) max(var(--sc-gutter), env(safe-area-inset-right, 0px)) var(--sc-4) max(var(--sc-gutter), env(safe-area-inset-left, 0px));
   pointer-events: none;
 }
-.bar a { pointer-events: auto; }
-.bar__mark { display: inline-flex; align-items: center; gap: var(--sc-3); text-decoration: none; }
+.bar a, .bar button, .bar .auto { pointer-events: auto; }
+.bar__mark { display: inline-flex; align-items: center; gap: var(--sc-1); text-decoration: none; }
+/* The NP mark is the hidden switch for the auto-scroll panel. 44px hit area. */
+.bar__np {
+  min-width: 44px; min-height: 44px; margin: -6px 0 -6px -10px; padding: 0 10px;
+  display: inline-flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 10px;
+  color: var(--sc-ink); cursor: pointer;
+}
+.bar__np[aria-expanded="true"] { background: color-mix(in oklab, var(--sc-accent) 16%, transparent); }
 .bar__name {
-  padding-left: var(--sc-3); border-left: 1px solid var(--sc-hairline-strong);
+  text-decoration: none; padding-left: var(--sc-3); border-left: 1px solid var(--sc-hairline-strong);
   font: 700 var(--sc-t-xs)/1 var(--sc-font-display); font-stretch: 118%;
   letter-spacing: 0.16em; text-transform: uppercase;
 }
@@ -382,8 +389,11 @@ html:not(.is-scrolled) .bar { opacity: 0; }
 
 /* ------------------------------------------------ smooth scroll (Lenis) -- */
 html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+/* The engine CSS sets html { scroll-behavior: smooth }. With Lenis that makes every
+   per-frame scroll write start a native smooth scroll too, and the two fight (the
+   "dropping" feel). Lenis only adds the `lenis` class here, so key off that. */
+html.lenis { scroll-behavior: auto !important; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-stopped { overflow: hidden; }
 
 /* ------------------------------------------------------- custom cursor -- */
@@ -415,3 +425,41 @@ html.has-cursor :is(input:not([type="range"]), textarea) { cursor: text !importa
 /* ---------------------------------------------------------- grain cost -- */
 .sc-grain { will-change: transform; contain: strict; }
 @media (max-width: 860px) { .sc-grain { display: none; } }
+
+/* --------------------------------------------- auto-scroll panel (hidden) -- */
+html:not(.is-scrolled) .bar.is-open { opacity: 1; }
+.auto {
+  position: absolute; top: calc(100% - 2px); left: max(var(--sc-gutter), env(safe-area-inset-left, 0px));
+  width: min(21rem, calc(100vw - 2 * var(--sc-gutter)));
+  display: grid; gap: var(--sc-4); padding: var(--sc-5);
+  background: color-mix(in oklab, var(--sc-canvas) 90%, transparent);
+  border: 1px solid var(--sc-hairline-strong); border-radius: 12px;
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.6);
+}
+.auto[hidden] { display: none; }
+.auto__title { margin: 0; }
+.auto__time { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: var(--sc-3); }
+.auto__out { text-align: center; font: 800 var(--sc-t-3xl)/1 var(--sc-font-display); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.auto__step, .auto__presets button, .auto__stop {
+  min-height: 44px; border: 1px solid var(--sc-hairline-strong); border-radius: 8px; cursor: pointer;
+  background: transparent; color: var(--sc-ink); font: 600 var(--sc-t-sm)/1 var(--sc-font-text);
+  transition: border-color 160ms var(--sc-ease-out), background-color 160ms var(--sc-ease-out);
+}
+.auto__step { font-size: 1.5rem; }
+.auto__step:hover, .auto__presets button:hover, .auto__stop:hover { border-color: var(--sc-accent); }
+.auto__presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sc-2); }
+.auto__presets button.is-on { border-color: var(--sc-accent); background: color-mix(in oklab, var(--sc-accent) 16%, transparent); }
+.auto__row { display: grid; grid-template-columns: 1fr auto; gap: var(--sc-3); }
+.auto__row:has(#auto-stop[hidden]) { grid-template-columns: 1fr; }
+.auto__go {
+  min-height: 48px; border: 0; border-radius: 8px; cursor: pointer; background: var(--sc-accent); color: var(--sc-accent-ink);
+  font: 800 var(--sc-t-base)/1 var(--sc-font-display); font-stretch: 112%; letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background-color 160ms var(--sc-ease-out);
+}
+.auto__go:hover { background: #FF963A; }
+.auto__go:active, .auto__step:active, .auto__stop:active { translate: 0 1px; }
+.auto__stop { padding: 0 var(--sc-5); }
+.auto__track { height: 2px; background: var(--sc-hairline-strong); overflow: hidden; }
+.auto__track i { display: block; height: 100%; background: var(--sc-accent); transform-origin: 0 50%; transform: scaleX(0); }
+.auto__left { margin: 0; font-size: var(--sc-t-sm); color: var(--sc-ink-soft); font-variant-numeric: tabular-nums; }

@@ -18,12 +18,35 @@
 <span data-sc-progress></span>
 <div class="sc-grain" aria-hidden="true"></div>
 
-<header class="bar">
-  <a class="bar__mark" href="#top" aria-label="Nova Prestige, retour au début">
-    <span class="np" aria-hidden="true">N<b>P</b></span>
-    <span class="bar__name">Nova <b>Prestige</b></span>
-  </a>
+<header class="bar" id="bar">
+  <div class="bar__mark">
+    <!-- The NP mark opens the hidden auto-scroll panel. -->
+    <button class="bar__np np" id="auto-toggle" type="button" aria-expanded="false" aria-controls="auto-panel" aria-label="Défilement automatique">N<b>P</b></button>
+    <a class="bar__name" href="#top" aria-label="Nova Prestige, retour au début">Nova <b>Prestige</b></a>
+  </div>
   <span class="bar__tag">Work smarter. Live better.</span>
+
+  <div class="auto" id="auto-panel" role="group" aria-labelledby="auto-title" hidden>
+    <p class="auto__title label" id="auto-title">Défilement automatique</p>
+    <div class="auto__time">
+      <button class="auto__step" type="button" data-step="-15" aria-label="Moins 15 secondes">−</button>
+      <output class="auto__out" id="auto-time" for="auto-presets">2:00</output>
+      <button class="auto__step" type="button" data-step="15" aria-label="Plus 15 secondes">+</button>
+    </div>
+    <div class="auto__presets" id="auto-presets" role="group" aria-label="Durées proposées">
+      <button type="button" data-secs="60">1 min</button>
+      <button type="button" data-secs="120">2 min</button>
+      <button type="button" data-secs="180">3 min</button>
+      <button type="button" data-secs="300">5 min</button>
+    </div>
+    <div class="auto__row">
+      <button class="auto__go" id="auto-go" type="button">Lancer</button>
+      <button class="auto__stop" id="auto-stop" type="button" hidden>Arrêter</button>
+    </div>
+    <div class="auto__track" aria-hidden="true"><i id="auto-bar"></i></div>
+    <p class="auto__left" id="auto-left">Le site se déroule en entier sur cette durée.</p>
+    <p class="visually-hidden" id="auto-status" role="status"></p>
+  </div>
 </header>
 
 <main id="top">

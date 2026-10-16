@@ -24,12 +24,15 @@ let last = 0;
 // (a slow laptop at 20 fps settles as fast as a fast one at 120).
 const ease = (k60, dt) => 1 - Math.pow(1 - k60, dt * 60);
 function loop(time) {
-  const dt = Math.min(0.1, last ? (time - last) / 1000 : 1 / 60);
+  const raw = last ? (time - last) / 1000 : 1 / 60; // real elapsed seconds (auto-scroll needs this)
+  const dt = Math.min(0.1, raw);                      // capped, for easing
   last = time;
   lenis?.raf(time);
-  for (const fn of ticks) fn(dt);
+  for (const fn of ticks) fn(dt, raw);
   requestAnimationFrame(loop);
 }
+// coming back to a hidden tab must not count the time away as one giant frame
+document.addEventListener('visibilitychange', () => { last = 0; });
 
 /* ========================= smooth wheel scroll ==========================
    Desktop only. Lenis moves the real window scroll, so the scroll engine,
@@ -45,6 +48,106 @@ if (fine && !reduce) {
     lenis.scrollTo(id === '#top' ? 0 : el, { duration: 1.4 });
   }));
 }
+
+/* ============================== auto-scroll ==============================
+   Hidden behind the NP mark in the top bar. The visitor sets a time and the
+   whole page plays through by itself in exactly that time: constant speed with
+   a short ease in and out. Driven by real elapsed time, so it finishes on
+   schedule even on a slow machine. Any manual scroll, key or touch pauses it. */
+const AUTO_KEY = 'studystand-auto-seconds';
+const MIN_SECS = 30, MAX_SECS = 600;
+const autoEl = (id) => document.getElementById(id);
+const toggle = autoEl('auto-toggle'), panel = autoEl('auto-panel'), barEl = autoEl('bar');
+const timeOut = autoEl('auto-time'), goBtn = autoEl('auto-go'), stopBtn = autoEl('auto-stop');
+const trackBar = autoEl('auto-bar'), leftEl = autoEl('auto-left'), statusEl = autoEl('auto-status');
+const stepBtns = [...panel.querySelectorAll('[data-step]')];
+const presetBtns = [...panel.querySelectorAll('[data-secs]')];
+
+let autoSecs = 120;
+try { const v = parseInt(localStorage.getItem(AUTO_KEY), 10); if (v >= MIN_SECS && v <= MAX_SECS) autoSecs = v; } catch { /* storage unavailable */ }
+const mmss = (t) => { t = Math.max(0, Math.ceil(t)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+const maxY = () => Math.max(0, root.scrollHeight - innerHeight);
+
+let autoState = 'idle'; // idle | run | pause
+let legDur = 0, legT = 0, doneT = 0, startY = 0, shownSec = -1, finished = false;
+
+// Position along a leg of length T: ramp up, constant speed, ramp down. Ends at exactly 1.
+function profile(t, T) {
+  if (t <= 0) return 0;
+  if (t >= T) return 1;
+  const r = Math.min(1.2, T * 0.1), v = 1 / (T - r);
+  if (t < r) return 0.5 * (v / r) * t * t;
+  if (t > T - r) { const u = T - t; return 1 - 0.5 * (v / r) * u * u; }
+  return (v * r) / 2 + v * (t - r);
+}
+function setScroll(y) {
+  if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+  else window.scrollTo({ top: y, left: 0, behavior: 'instant' }); // the engine CSS sets smooth: never animate per frame
+}
+function renderAuto() {
+  const remaining = autoSecs - doneT - (autoState === 'run' ? legT : 0);
+  timeOut.textContent = mmss(autoState === 'idle' ? autoSecs : remaining);
+  goBtn.textContent = autoState === 'run' ? 'Pause' : autoState === 'pause' ? 'Reprendre' : 'Lancer';
+  stopBtn.hidden = autoState === 'idle';
+  for (const b of [...stepBtns, ...presetBtns]) b.disabled = autoState !== 'idle';
+  for (const b of presetBtns) b.classList.toggle('is-on', Number(b.dataset.secs) === autoSecs);
+  leftEl.textContent = autoState === 'run' ? `Reste ${mmss(remaining)}`
+    : autoState === 'pause' ? `En pause, reste ${mmss(remaining)}`
+    : finished ? 'Terminé. Relancez quand vous voulez.' : 'Le site se déroule en entier sur cette durée.';
+}
+function announce(msg) { statusEl.textContent = msg; }
+function setOpen(open) {
+  panel.hidden = !open;
+  toggle.setAttribute('aria-expanded', String(open));
+  barEl.classList.toggle('is-open', open);
+  if (open) goBtn.focus({ preventScroll: true });
+}
+function beginLeg(d) {
+  const m = maxY();
+  if (scrollY > m - 8) { setScroll(0); startY = 0; } else startY = scrollY;
+  legDur = Math.max(1, d); legT = 0; autoState = 'run'; finished = false; shownSec = -1;
+}
+function startAuto() { doneT = 0; beginLeg(autoSecs); renderAuto(); announce('Défilement lancé'); setOpen(false); }
+function pauseAuto() { if (autoState !== 'run') return; doneT += legT; autoState = 'pause'; renderAuto(); announce('En pause'); }
+function resumeAuto() { beginLeg(autoSecs - doneT); renderAuto(); announce('Reprise'); setOpen(false); }
+function stopAuto(done) {
+  autoState = 'idle'; doneT = 0; legT = 0; finished = !!done;
+  trackBar.style.transform = 'scaleX(0)';
+  renderAuto(); announce(done ? 'Terminé' : 'Arrêté');
+}
+ticks.push((dt, raw) => {
+  if (autoState !== 'run') return;
+  legT = Math.min(legDur, legT + Math.min(raw, 5)); // slow frames still count in full, so it ends on time
+  setScroll(startY + (maxY() - startY) * profile(legT, legDur));
+  trackBar.style.transform = `scaleX(${clamp((doneT + legT) / autoSecs).toFixed(4)})`;
+  const sec = Math.ceil(autoSecs - doneT - legT);
+  if (sec !== shownSec) { shownSec = sec; renderAuto(); }
+  if (legT >= legDur) stopAuto(true);
+});
+
+toggle.addEventListener('click', () => setOpen(panel.hidden));
+goBtn.addEventListener('click', () => (autoState === 'run' ? pauseAuto() : autoState === 'pause' ? resumeAuto() : startAuto()));
+stopBtn.addEventListener('click', () => stopAuto(false));
+const setSecs = (v) => {
+  autoSecs = clamp(Math.round(v / 15) * 15, MIN_SECS, MAX_SECS);
+  try { localStorage.setItem(AUTO_KEY, String(autoSecs)); } catch { /* ignore */ }
+  renderAuto();
+};
+for (const b of stepBtns) b.addEventListener('click', () => setSecs(autoSecs + Number(b.dataset.step)));
+for (const b of presetBtns) b.addEventListener('click', () => setSecs(Number(b.dataset.secs)));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); toggle.focus(); } });
+document.addEventListener('pointerdown', (e) => {
+  if (!panel.hidden && !e.target.closest('#auto-panel, #auto-toggle')) setOpen(false);
+});
+// the visitor takes over: manual scroll, keys, touch, the 3D stand, or the form
+const inUi = (e) => e.target.closest && e.target.closest('#auto-panel, #auto-toggle');
+const takeOver = (e) => { if (autoState === 'run' && !inUi(e)) pauseAuto(); };
+addEventListener('wheel', takeOver, { passive: true });
+addEventListener('touchstart', takeOver, { passive: true });
+addEventListener('keydown', (e) => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) takeOver(e); });
+addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('#gl, #hinge')) takeOver(e); });
+addEventListener('focusin', (e) => { if (e.target.closest && e.target.closest('#order input, #order select')) takeOver(e); });
+renderAuto();
 
 // top bar stays out of the opening shot
 const markScrolled = () => root.classList.toggle('is-scrolled', scrollY > 60);
@@ -98,40 +201,64 @@ function sequence(canvas) {
   const base = canvas.dataset.seq;
   const count = parseInt(canvas.dataset.seqCount, 10);
   const ctx = canvas.getContext('2d');
-  let set = '', frames = [], queue = [], inflight = 0;
-  let cur = 0, drawn = -1, near = false, dirty = true;
+  const canBitmap = typeof createImageBitmap === 'function';
+  const R = 12; // frames either side of the current one kept decoded
+  let set = '', frames = [], bitmaps = [], pending = new Set(), queue = [], inflight = 0;
+  let cur = 0, drawnKey = '', winAt = -1, near = false, dirty = true;
   let y0 = 0, y1 = 1;
 
   const url = (i) => `${base}/${set}/${String(i + 1).padStart(3, '0')}.webp`;
+  // Every frame is fetched once (small compressed files, kept by the browser).
+  // They are NOT all decoded: decoded they would be ~400 MB, and the browser
+  // would throw them away and re-decode mid-scroll, which shows up as stutter.
   function pump() {
-    while (inflight < 6 && queue.length) {
+    while (inflight < 8 && queue.length) {
       const i = queue.shift();
       if (frames[i]) continue;
       const img = new Image();
       const mine = set;
       inflight++;
+      img.onload = () => { inflight--; if (mine === set) { img.ok = true; dirty = true; winAt = -1; } pump(); };
+      img.onerror = () => { inflight--; pump(); };
       img.src = url(i);
       frames[i] = img;
-      // decode off the draw path, so the first draw of a frame never hitches
-      img.decode().then(() => { if (mine === set) { img.ok = true; dirty = true; } })
-        .catch(() => {})
-        .finally(() => { inflight--; pump(); });
     }
   }
+  function dropBitmaps() { for (const b of bitmaps) b?.close?.(); bitmaps = []; pending = new Set(); }
   function choose() {
     const next = narrowQuery.matches ? 'm' : 'd';
     if (next === set) return;
-    set = next; frames = new Array(count); queue = []; drawn = -1; dirty = true;
+    dropBitmaps();
+    set = next; frames = new Array(count); queue = []; drawnKey = ''; winAt = -1; dirty = true;
     // coarse to fine, so a fast scroll always has a nearby frame to show
     const seen = new Set();
     for (const step of [16, 8, 4, 2, 1]) for (let i = 0; i < count; i += step) if (!seen.has(i)) { seen.add(i); queue.push(i); }
     if (!seen.has(count - 1)) queue.splice(1, 0, count - 1);
   }
+  // Keep a window of decoded bitmaps around the current frame; release the rest.
+  function windowAround(idx) {
+    if (!canBitmap) return;
+    const lo = Math.max(0, idx - R), hi = Math.min(count - 1, idx + R);
+    const mine = set;
+    for (let i = lo; i <= hi; i++) {
+      const img = frames[i];
+      if (!img || !img.ok || bitmaps[i] || pending.has(i)) continue;
+      pending.add(i);
+      createImageBitmap(img).then((bm) => {
+        pending.delete(i);
+        if (mine !== set || Math.abs(i - Math.round(cur)) > R + 4) { bm.close(); return; }
+        bitmaps[i] = bm; dirty = true;
+      }).catch(() => pending.delete(i));
+    }
+    for (let i = 0; i < bitmaps.length; i++) {
+      if (bitmaps[i] && (i < lo - 4 || i > hi + 4)) { bitmaps[i].close(); bitmaps[i] = undefined; }
+    }
+  }
   function size() {
     const dpr = Math.min(devicePixelRatio || 1, 1.5);
     canvas.width = Math.round(canvas.clientWidth * dpr);
     canvas.height = Math.round(canvas.clientHeight * dpr);
-    drawn = -1; dirty = true;
+    drawnKey = ''; dirty = true;
   }
   function measure() {
     const top = act.getBoundingClientRect().top + scrollY;
@@ -139,40 +266,61 @@ function sequence(canvas) {
     y0 = Math.max(0, top - innerHeight);
     y1 = Math.min(max, top + act.offsetHeight);
   }
+  const exact = (i) => bitmaps[i] || (frames[i] && frames[i].ok ? frames[i] : null);
   function nearest(i) {
     for (let d = 0; d < count; d++) {
-      const a = frames[i - d], b = frames[i + d];
-      if (a && a.ok) return a;
-      if (b && b.ok) return b;
+      const a = exact(i - d) , b = exact(i + d);
+      if (a) return a;
+      if (b) return b;
     }
     return null;
+  }
+  function paint(src, alpha) {
+    const w0 = src.naturalWidth || src.width, h0 = src.naturalHeight || src.height;
+    const cw = canvas.width, ch = canvas.height;
+    const s = Math.max(cw / w0, ch / h0);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(src, (cw - w0 * s) / 2, (ch - h0 * s) / 2, w0 * s, h0 * s);
+    ctx.globalAlpha = 1;
   }
 
   choose();
   pump();
   narrowQuery.addEventListener?.('change', () => { choose(); pump(); });
   new ResizeObserver(size).observe(canvas);
-  new IntersectionObserver((es) => { near = es[0].isIntersecting; }, { rootMargin: '150% 0px' }).observe(act);
+  new IntersectionObserver((es) => { near = es[0].isIntersecting; if (near) winAt = -1; }, { rootMargin: '150% 0px' }).observe(act);
   measurers.push(measure);
   size();
   measure();
 
-  const k60 = lenis ? 0.32 : 0.24;
   ticks.push((dt) => {
     if (!near) return;
     const target = clamp((scrollY - y0) / Math.max(1, y1 - y0)) * (count - 1);
-    cur += (target - cur) * (reduce ? 1 : ease(k60, dt));
-    if (Math.abs(target - cur) < 0.01) cur = target;
+    // Lenis (desktop) already smooths the scroll itself, so follow it directly.
+    // Native touch scrolling gets a light ease so the frames do not step.
+    if (lenis || reduce) cur = target;
+    else { cur += (target - cur) * ease(0.5, dt); if (Math.abs(target - cur) < 0.005) cur = target; }
+
     const idx = Math.round(cur);
-    if (idx === drawn && !dirty) return;
-    const img = nearest(idx);
-    if (!img) return;
+    if (idx !== winAt) { winAt = idx; windowAround(idx); }
+
+    // The footage is cut at 16 fps. Blending the two neighbouring frames by the
+    // fractional position turns that into continuous motion at any refresh rate.
+    const a = Math.min(count - 1, Math.floor(cur));
+    let f = cur - a;
+    if (a >= count - 1 || f < 0.04) f = 0;
+    const baseIdx = f > 0.96 ? a + 1 : a;
+    const over = f >= 0.04 && f <= 0.96 ? a + 1 : -1;
+    const q = over < 0 ? 0 : Math.round(f * 12) / 12;
+    const key = `${baseIdx}|${over}|${q}`;
+    if (key === drawnKey && !dirty) return;
+
+    const A = nearest(baseIdx);
+    if (!A) return;
     dirty = false;
-    const cw = canvas.width, ch = canvas.height;
-    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-    const w = img.naturalWidth * s, h = img.naturalHeight * s;
-    ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
-    drawn = frames[idx] && frames[idx].ok ? idx : -1;
+    paint(A, 1);
+    if (over >= 0) { const B = exact(over); if (B && B !== A) paint(B, q); }
+    drawnKey = exact(baseIdx) && (over < 0 || exact(over)) ? key : ''; // retry if a frame was a stand-in
   });
 }
 document.querySelectorAll('canvas[data-seq]').forEach(sequence);
